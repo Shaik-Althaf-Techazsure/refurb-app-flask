@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Refurbished Phone Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+  
+    .hero {
+      background: linear-gradient(to right, #2193b0, #6dd5ed);
+      color: white;
+      padding: 80px 20px;
+      text-align: center;
+    }
+  
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+  
+    .platform-section {
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+}
+
+/* Unique background colors */
+.platform-x {
+  background-color: #e0f7fa; /* light cyan */
+}
+
+.platform-y {
+  background-color: #f1f8e9; /* light green */
+}
+
+.platform-z {
+  background-color: #fff3e0; /* light orange */
+}
+
+/* Section titles */
+.platform-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+}
+
+  
+    .carousel-inner {
+      padding: 0 60px; /* Pushes cards away from carousel arrows */
+    }
+  
+    .carousel-item .row {
+      margin: 0 auto;
+      justify-content: center;
+    }
+  
+    .carousel-card {
+      width: 18rem;
+      margin: 0 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+  
+    .carousel-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+  
+    .carousel-card img {
+      height: 200px;
+      object-fit: contain;
+      padding: 10px;
+      background-color: #f1f1f1;
+    }
+  
+    .card-body h5 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+  
+    .card-body p {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: #555;
+    }
+  
+    .btn-view {
+      background-color: #2193b0;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      transition: background 0.3s ease;
+    }
+  
+    .btn-view:hover {
+      background-color: #197392;
+    }
+  
+    .carousel-control-prev,
+    .carousel-control-next {
+      width: 5%;
+      z-index: 10;
+    }
+  
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-color: #333;
+      border-radius: 50%;
+      padding: 12px;
+    }
+  
+    footer {
+      background: #343a40;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: 50px;
+    }
+  
+    @media (max-width: 768px) {
+      .carousel-inner {
+        padding: 0 30px;
+      }
+  
+      .carousel-card {
+        width: 90%;
+        margin: 10px auto;
+      }
+    }
+  </style>
+  
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">📱 RefurbApp</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="/inventory" class="nav-link">Inventory</a></li>
+        <li class="nav-item"><a href="/admin" class="nav-link">Admin</a></li>
+        {% if session.logged_in %}
+        <li class="nav-item"><a href="/logout" class="nav-link">Logout</a></li>
+      {% else %}
+        <li class="nav-item"><a href="/login" class="nav-link">Login</a></li>
+      {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Refurbished Phone Manager</h1>
+  <p>Manage and sell across Platform X, Y, Z with smart pricing and mapping</p>
+  <a href="/inventory" class="btn btn-light mt-3">📦 View Inventory</a>
+  <a href="/admin" class="btn btn-outline-light mt-3">🔐 Admin Panel</a>
+</div>
+
+<div class="container my-5">
+    <h2 class="mb-4 text-center">📱 Available on Platforms</h2>
+  
+    {% for platform, phones in platform_data.items() %}
+      {% if phones %}
+      <div class="platform-section platform-{{ platform | lower }}">
+        <h2 class="platform-title">Platform {{ platform }}</h2>
+        <div id="carousel-{{ platform }}" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+          <div class="carousel-inner">
+            {% for group in phones|batch(3, '') %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+              <div class="row g-4">
+                {% for phone in group if phone %}
+                <div class="col-md-4">
+                  <a href="{{ url_for('phone_detail', phone_id=phone.id) }}" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm border-0 phone-card">
+                      <img src="{{ url_for('static', filename='images/' + phone.image_filename) }}"
+                           class="card-img-top" style="height: 220px; object-fit: cover;" alt="{{ phone.name }}">
+                      <div class="card-body">
+                        <h5 class="card-title">{{ phone.name }}</h5>
+                        <p class="text-muted mb-1">Condition: {{ phone.condition }}</p>
+                        <p class="text-success fw-bold">₹{{ phone.platform_prices[platform] }}</p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ platform }}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ platform }}" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  
+  
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 fixed-bottom">
+    <div class="container">
+      &copy; 2025 Shaik Althaf _ TechAZsure.
+    </div>
+  </footer>
+  
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

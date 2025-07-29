@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Add Phone</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    footer {
+      background: #343a40;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">📱 RefurbApp</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="/inventory" class="nav-link">Inventory</a></li>
+        <li class="nav-item"><a href="/admin" class="nav-link active">Admin</a></li>
+        <li class="nav-item"><a href="/logout" class="nav-link">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Add Phone Form -->
+<div class="container mt-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="mb-4 text-center">📋 Add a Refurbished Phone</h2>
+    <form method="POST" enctype="multipart/form-data" id="phoneForm">
+      <div class="mb-3">
+        <label class="form-label">Phone Name</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Cost Price (₹)</label>
+        <input type="number" name="cost_price" step="0.01" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Condition</label>
+        <select name="condition" class="form-select" required>
+          <option value="Like New">Like New</option>
+          <option value="Good">Good</option>
+          <option value="Fair">Fair</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Stock</label>
+        <input type="number" name="stock" class="form-control" required>
+      </div>
+
+      <div id="imageFields">
+        <label class="form-label">Phone Images (Max 5)</label>
+        <input type="file" name="images" class="form-control mb-2">
+      </div>
+      <button type="button" class="btn btn-secondary mb-3" onclick="addImageField()">➕ Add Photo</button>
+
+      <button type="submit" class="btn btn-success w-100">Add Phone</button>
+    </form>
+  </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="container mt-5 mb-5">
+  <h4 class="text-center mb-4">📦 Existing Inventory</h4>
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Phone</th>
+        <th>Condition</th>
+        <th>Stock</th>
+        <th>Price (₹)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for phone in phones %}
+      <tr>
+        <td>{{ phone.name }}</td>
+        <td>{{ phone.condition }}</td>
+        <td>{{ phone.stock }}</td>
+        <td>{{ phone.cost_price }}</td>
+        <td>
+          <a href="{{ url_for('edit_phone', phone_id=phone.id) }}" class="btn btn-sm btn-warning">✏️ Edit</a>
+          <a href="{{ url_for('delete_phone', phone_id=phone.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this phone?');">🗑️ Delete</a>
+          <form action="{{ url_for('toggle_visibility', phone_id=phone.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-sm {{ 'btn-secondary' if phone.visible else 'btn-outline-secondary' }}">
+              {{ 'Hide' if phone.visible else 'Show' }}
+            </button>
+          </form>
+          
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 fixed-bottom">
+    <div class="container">
+      &copy; 2025 Shaik Althaf _ TechAZsure.
+    </div>
+  </footer>
+  
+
+<!-- Script for dynamic image fields -->
+<script>
+  let imageCount = 1;
+  function addImageField() {
+    if (imageCount >= 5) {
+      alert("You can only upload up to 5 images.");
+      return;
+    }
+    const newInput = document.createElement("input");
+    newInput.type = "file";
+    newInput.name = "images";
+    newInput.className = "form-control mb-2";
+    document.getElementById("imageFields").appendChild(newInput);
+    imageCount++;
+  }
+</script>
+
+</body>
+</html>

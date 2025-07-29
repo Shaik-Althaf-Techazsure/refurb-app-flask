@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Refurbished Inventory</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    *{
+        scroll-behavior: smooth;
+    }
+    body{
+        padding-top: 50px;
+        margin-bottom: 50px;
+    }
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+    }
+    footer {
+      background: #343a40;
+      color: white;
+      text-align: center;
+      padding: 5px 0;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">📱 RefurbApp</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="/admin" class="nav-link">Admin</a></li>
+        <li class="nav-item"><a href="/logout" class="nav-link">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">📦 Refurbished Phone Inventory</h2>
+
+  <!-- Search Bar -->
+  <form method="GET" class="row mb-4">
+    <div class="col-md-4">
+      <input type="text" name="search" class="form-control" placeholder="🔍 Search by phone name" value="{{ search_query }}">
+    </div>
+    <div class="col-md-3">
+      <select name="condition" class="form-select">
+        <option value="">All Conditions</option>
+        <option value="Like New" {% if selected_condition == "Like New" %}selected{% endif %}>Like New</option>
+        <option value="Good" {% if selected_condition == "Good" %}selected{% endif %}>Good</option>
+        <option value="Fair" {% if selected_condition == "Fair" %}selected{% endif %}>Fair</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-3">
+        <select name="sort" class="form-select">
+          <option value="">Sort By</option>
+          <option value="name_asc" {% if selected_sort == "name_asc" %}selected{% endif %}>Name A–Z</option>
+          <option value="name_desc" {% if selected_sort == "name_desc" %}selected{% endif %}>Name Z–A</option>
+          <option value="stock_asc" {% if selected_sort == "stock_asc" %}selected{% endif %}>Stock Low → High</option>
+          <option value="stock_desc" {% if selected_sort == "stock_desc" %}selected{% endif %}>Stock High → Low</option>
+          <option value="price_asc" {% if selected_sort == "price_asc" %}selected{% endif %}>Price Low → High</option>
+          <option value="price_desc" {% if selected_sort == "price_desc" %}selected{% endif %}>Price High → Low</option>
+        </select>
+    </div> 
+    <div class="col-md-3">
+      <a href="/inventory" class="btn btn-secondary w-100">Reset</a>
+    </div>
+  </form>
+  
+
+  <!-- Phone Cards -->
+  <div class="row">
+    {% for phone in phones %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm h-100">
+
+        <!-- Image Carousel -->
+        <div id="carousel{{ loop.index }}" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% for img in phone.images %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+              <img src="{{ url_for('static', filename='images/' + img) }}" class="d-block w-100" style="height: 200px; object-fit: cover;" alt="...">
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <h5 class="card-title text-center">
+            {{ phone.name }}
+            {% if phone.stock <= 3 %}
+              <span class="badge bg-danger">Low Stock</span>
+            {% elif phone.stock >= 15 %}
+              <span class="badge bg-success">Newly Added</span>
+            {% endif %}
+          </h5>
+          <p class="text-muted text-center mb-1"><strong>Condition:</strong> {{ phone.condition }}</p>
+          <p class="text-center"><strong>Stock:</strong> {{ phone.stock }}</p>
+          <hr>
+          <div>
+            <p class="fw-bold text-center mb-2">📦 Platform Prices:</p>
+            {% for platform, price in phone.platform_prices.items() %}
+              <p class="text-center mb-0">
+                <span class="badge bg-primary">{{ platform }}</span>
+                ₹{{ price }} <small class="text-muted">({{ phone.platform_conditions[platform] }})</small>
+              </p>
+            {% endfor %}
+          </div>
+
+          <div class="text-center mt-3">
+            <a href="{{ url_for('phone_detail', phone_id=phone.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex justify-content-center mt-4">
+    <nav>
+      <ul class="pagination">
+        {% if current_page > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('inventory', search=search_query, condition=selected_condition, sort=selected_sort, page=current_page - 1) }}">« Prev</a>
+        </li>
+        {% endif %}
+  
+        {% for p in range(1, total_pages + 1) %}
+        <li class="page-item {% if p == current_page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('inventory', search=search_query, condition=selected_condition, sort=selected_sort, page=p) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+  
+        {% if current_page < total_pages %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('inventory', search=search_query, condition=selected_condition, sort=selected_sort, page=current_page + 1) }}">Next »</a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  <h2 class="text-center my-5">🚫 Not Listed Phones</h2>
+<div class="row">
+  {% for phone in unlisted_phones %}
+    <div class="col-md-4 mb-4">
+      <div class="card border-danger shadow-sm">
+        <img src="{{ url_for('static', filename='images/' + phone.images[0]) }}" class="card-img-top" alt="{{ phone.name }}">
+        <div class="card-body">
+          <h5 class="card-title text-danger">{{ phone.name }}</h5>
+          <p class="card-text">
+            Condition: {{ phone.condition }}<br>
+            Stock: {{ phone.stock }}<br>
+            <span class="badge bg-danger">Not Listed</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 fixed-bottom">
+  <div class="container">
+    &copy; 2025 Shaik Althaf _ TechAZsure.
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
